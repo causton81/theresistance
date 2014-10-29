@@ -1,0 +1,18 @@
+{
+  "name": "Echo",
+  "description": "Minimal Freedom module",
+  "app": {
+    "script": "app.js"
+  },
+  "dependencies": {
+      "child": { "url": "child.json" },
+      "log": {
+        "url": "logger.json",
+        "api": "console"
+      },
+      "getlog": {
+        "url": "logger.json",
+        "api": "getLogs"
+      }
+  }
+}

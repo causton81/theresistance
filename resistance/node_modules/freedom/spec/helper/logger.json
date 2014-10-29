@@ -1,0 +1,19 @@
+{
+  "name": "Logger",
+  "description": "Freedom Logger with custom API",
+  "app": {
+    "script": "logger.js"
+  },
+  "constraints": {
+    "isolation": "never"
+  },
+  "provides": [
+    "console", "getLogs"
+  ],
+  "default": "console",
+  "api": {
+    "getLogs": {
+      "get": {"type": "method", "value":[], "ret": "string"}
+    }
+  }
+}
