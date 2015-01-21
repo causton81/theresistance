@@ -1,6 +1,10 @@
 The Resistance
 =============
 
+#INSTALLATION
+pip install Flask
+python ./server.py
+
 Cast & Crew
 ============
 Anirup Dutta
@@ -16,3 +20,5 @@ Jason Rodriguez
 Rodrigo Soto
 
 Matt Trachier
+
+Christopher Gallo
