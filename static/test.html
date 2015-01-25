@@ -4,6 +4,9 @@
 	</head>
 
 	<body>
+		<input id="name" type="text" value="fixme"></input>
+		<button id="join" type="button">Join</button>
+
 		<ul id="player_list">
 		</ul>
 
@@ -12,11 +15,15 @@
 		<script type="text/javascript">
 //<!--
 $(document).ready(function() {
+	$("#join").click(function(evt) {
+		var name = $("#name").val();
+		msg = ["join game", {"game": "causton", "player": name}];
+		sock.send(JSON.stringify(msg))
+	});
+
 	var sock = new SockJS('http://localhost:8888/game');
 	sock.onopen = function() {
 		console.log('open');
-		msg = ["join game", {"game": "causton", "player": "causton"}];
-		sock.send(JSON.stringify(msg))
 	};
 	sock.onmessage = function(e) {
 		console.log('message', e.data);
