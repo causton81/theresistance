@@ -21,7 +21,8 @@ $(document).ready(function() {
 		sock.send(JSON.stringify(msg))
 	});
 
-	var sock = new SockJS('http://localhost:8888/game');
+	//alert(window.location.hostname);
+	var sock = new SockJS('http://HOST:8888/game'.replace('HOST', window.location.hostname));
 	sock.onopen = function() {
 		console.log('open');
 	};

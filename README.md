@@ -2,8 +2,12 @@ The Resistance
 =============
 
 #INSTALLATION
-pip install Flask
-python ./server.py
+
+```bash
+pip install -r requirements.txt
+python ./server.py &
+python ./wsgame.py &
+```
 
 Cast & Crew
 ============
@@ -22,3 +26,5 @@ Rodrigo Soto
 Matt Trachier
 
 Christopher Gallo
+
+Christopher Auston
