@@ -24,5 +24,6 @@ def gm():
     return "This is the gm page"
 
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
