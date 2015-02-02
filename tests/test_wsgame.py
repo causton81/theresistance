@@ -1,13 +1,9 @@
+from wsgame import Game, make_app
 import pytest
 import urllib.parse
 import json
 from tornado import web, websocket, testing
-from os import path
-import sys
 
-top_dir = path.abspath(path.join(path.dirname(__file__), '..'))
-sys.path.append(top_dir)
-from wsgame import Game, make_app
 
 
 class Helper(object):
@@ -104,4 +100,7 @@ class TestGame(testing.AsyncHTTPTestCase):
         del players['causton']
         event, data = json.loads(res)
         assert Game.EVT_REM_PLAYER == event
-        assert data == {"player": "causton", "players": players }
+        #assert data == {"player": "causton", "players": players }
+        assert data["player"] == "causton"
+        assert "causton" not in data["players"]
+        assert "player3" in data["players"]

@@ -4,6 +4,19 @@ import json
 import math
 
 
+class Rules(object):
+
+    def __init__(self):
+        pass
+
+
+
+    def get_characters(self):
+        return []
+
+
+
+
 class Game(object):
     EVT_JOIN = 'join game'
     EVT_ADD_PLAYER = 'add player'
