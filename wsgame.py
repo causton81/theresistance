@@ -1,6 +1,7 @@
 from tornado import web, websocket, ioloop
 from sockjs.tornado import SockJSRouter, SockJSConnection
 import json
+import math
 
 
 class Game(object):
@@ -11,10 +12,13 @@ class Game(object):
     EVT_ERROR = 'error'
     MSG_NEED_MORE_PLAYERS = 'at least five players must join to assign roles'
 
+    FACTOR = (2 / 3)
+
 
     def __init__(self, name):
         self.name = name
         self.players = dict()
+        self.characters = None
 
 
     def add_player(self, ws, name):
@@ -49,8 +53,10 @@ class Game(object):
 
     
     def get_players_info(self):
-        rv = list(self.players.values())
-        rv.sort()
+        rv = {}
+        for i,p in enumerate(self.players.values()):
+            rv[p] = self.characters[i] if self.characters else "resistance"
+
         return rv
 
     
@@ -67,6 +73,21 @@ class Game(object):
         elif Game.EVT_ASSIGN_ROLES == event:
             if self.num_players() < 5:
                 ws.send(json.dumps([Game.EVT_ERROR, {'message': Game.MSG_NEED_MORE_PLAYERS }]))
+                return
+
+            num_resistance = math.floor(Game.FACTOR * self.num_players())
+            num_spies = self.num_players() - num_resistance
+
+            self.characters = []
+            for i in range(num_resistance):
+                self.characters.append('resistance')
+
+            for i in range(num_spies):
+                self.characters.append('spy')
+
+            self.broadcast(Game.EVT_ASSIGN_ROLES, {
+                "players":  self.get_players_info()
+                })
 
 
 

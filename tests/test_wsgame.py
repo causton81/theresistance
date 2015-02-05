@@ -47,7 +47,7 @@ class TestGame(testing.AsyncHTTPTestCase):
 
         event, data = yield from h.recv(ws1)
         assert Game.EVT_ADD_PLAYER == event
-        assert data == {"player": "causton", "players": ["causton"]}
+        assert data == {"player": "causton", "players": {"causton": "resistance"} }
 
 
         ws2 = yield from h.connect()
@@ -55,11 +55,11 @@ class TestGame(testing.AsyncHTTPTestCase):
 
         event, data = yield from h.recv(ws2)
         assert Game.EVT_ADD_PLAYER == event
-        assert data == {"player": "kaladin", "players": ["causton", "kaladin"]}
+        assert data == {"player": "kaladin", "players": {"causton": "resistance", "kaladin": "resistance"} }
 
         event, data = yield from h.recv(ws1)
         assert Game.EVT_ADD_PLAYER == event
-        assert data == {"player": "kaladin", "players": ["causton", "kaladin"]}
+        assert data == {"player": "kaladin", "players": {"causton": "resistance", "kaladin": "resistance"} }
 
 
         h.send(ws1, Game.EVT_ASSIGN_ROLES, {})
@@ -69,14 +69,14 @@ class TestGame(testing.AsyncHTTPTestCase):
         assert {'message': Game.MSG_NEED_MORE_PLAYERS } == data
 
         socks = [ws1, ws2]
-        players = ["causton", "kaladin"]
+        players = {"causton": "resistance", "kaladin": "resistance"}
         for i in range(3,6):
             name = "player{}".format(i)
             ws = yield from h.connect()
             socks.append(ws)
 
             h.send(ws, Game.EVT_JOIN, {"player": name})
-            players.append(name)
+            players[name] = 'resistance'
 
             results = yield [s.read_message() for s in socks]
 
@@ -88,20 +88,20 @@ class TestGame(testing.AsyncHTTPTestCase):
 
 
 
-        '''
         msg = [Game.EVT_ASSIGN_ROLES, {}]
         ws1.write_message(json.dumps(msg))
-        res = yield ws1.read_message()
-        event,data = json.loads(res)
-        assert Game.EVT_ERROR == event
-        '''
+        results = yield [s.read_message() for s in socks]
+
+        for res in results:
+            event,data = json.loads(res)
+            assert Game.EVT_ASSIGN_ROLES == event
 
 
 
 
         ws1.close()
         res = yield ws2.read_message()
-        del players[0]
+        del players['causton']
         event, data = json.loads(res)
         assert Game.EVT_REM_PLAYER == event
         assert data == {"player": "causton", "players": players }
