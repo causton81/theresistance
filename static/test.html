@@ -22,7 +22,7 @@ $(document).ready(function() {
 	});
 
 	//alert(window.location.hostname);
-	var sock = new SockJS('http://HOST:8888/game'.replace('HOST', window.location.hostname));
+	var sock = new SockJS('http://HOST:8888/game/causton'.replace('HOST', window.location.hostname));
 	sock.onopen = function() {
 		console.log('open');
 	};

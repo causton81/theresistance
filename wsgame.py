@@ -7,6 +7,9 @@ class Game(object):
     EVT_JOIN = 'join game'
     EVT_ADD_PLAYER = 'add player'
     EVT_REM_PLAYER = 'remove player'
+    EVT_ASSIGN_ROLES = 'assign roles'
+    EVT_ERROR = 'error'
+    MSG_NEED_MORE_PLAYERS = 'at least five players must join to assign roles'
 
 
     def __init__(self, name):
@@ -16,6 +19,8 @@ class Game(object):
 
     def add_player(self, ws, name):
         self.players[ws] = name
+
+        print("New player '{}'".format(name))
 
         self.broadcast(Game.EVT_ADD_PLAYER, {
             "player": name,
@@ -48,6 +53,20 @@ class Game(object):
         rv.sort()
         return rv
 
+    
+    def num_players(self):
+        return len(self.players)
+
+    
+    def process_event(self, ws, event, data):
+        if Game.EVT_JOIN  == event:
+            player = data['player']
+
+            self.add_player(ws, player)
+
+        elif Game.EVT_ASSIGN_ROLES == event:
+            if self.num_players() < 5:
+                ws.send(json.dumps([Game.EVT_ERROR, {'message': Game.MSG_NEED_MORE_PLAYERS }]))
 
 
 
@@ -56,22 +75,19 @@ games = {}
 
 class GameHandler(SockJSConnection):
     def on_open(self, request):
-        pass
+        game_name = request.path.split('/')[2]
+
+        if game_name not in games:
+            print("Creating game '{}'".format(game_name))
+            games[game_name] = Game(game_name)
+
+        self.game = games[game_name]
 
 
     def on_message(self, msg):
         event, data = json.loads(msg)
 
-        if Game.EVT_JOIN  == event:
-            game_name = data['game']
-            player = data['player']
-
-            if game_name not in games:
-                games[game_name] = Game(game_name)
-
-            self.game = games[game_name]
-
-            self.game.add_player(self, player)
+        self.game.process_event(self, event, data)
 
 
 
@@ -84,7 +100,7 @@ class GameHandler(SockJSConnection):
 
 
 def make_app():
-    router = SockJSRouter(GameHandler, '/game')
+    router = SockJSRouter(GameHandler, r'/game/(?:\w+)')
     app = web.Application(router.urls)
     return app
 
