@@ -9,6 +9,7 @@ class Character(object):
     def __init__(self, name, spy):
         self.name = name
         self.spy = spy
+        self.group = []
 
         Character.deck[self.name] = self
 
@@ -82,6 +83,14 @@ class GameX(object):
         return self.players
 
 
+    def get_player_view(self, player):
+        view = {}
+        for p in self.get_players():
+            its_char = p.get_character()
+            other_char = p.get_character()
+            view[p.get_name()] = its_char.knows_other_as(other_char)
+
+        return view
 
 
     def assign_roles(self, *enabled_characters):
@@ -144,6 +153,10 @@ class Player(object):
     def __init__(self, name):
         self.name = name
         self.character = None
+
+
+    def get_name(self):
+        return self.name
 
 
     def get_character(self):
@@ -308,6 +321,11 @@ def test_game():
 
         if Rules.MERLIN == c:
             num_merlin += 1
+
+            view = g.get_player_view(p)
+            assert 5 == len(view)
+            for label in view.values():
+                assert label == "resistance" or label == "spy"
 
     assert 2 == num_spies
     assert 3 == num_resistance
