@@ -17,7 +17,7 @@
 $(document).ready(function() {
 	$("#join").click(function(evt) {
 		var name = $("#name").val();
-		msg = ["join game", {"game": "causton", "player": name}];
+		msg = ["change name", {"game": "causton", "player": name}];
 		sock.send(JSON.stringify(msg))
 	});
 
@@ -31,8 +31,9 @@ $(document).ready(function() {
 		msg = JSON.parse(e.data);
 		pl = $("#player_list");
 		pl.empty();
-		for(i in msg[1].players) {
-			pl.append($('<li>').text(msg[1].players[i]));
+		var data = msg[1];
+		for(name in data.players) {
+			pl.append($('<li>').text(name + ' is ' + data.players[name]));
 		}
 	};
 	sock.onclose = function() {
