@@ -5,19 +5,6 @@ from wsgame import *
 
 
 
-def test_factor():
-    assert [] == factor(2)
-    assert [] == factor(3)
-    assert [2] == factor(4)
-    assert [] == factor(5)
-    assert [2,3] == factor(6)
-    assert [] == factor(7)
-    assert [2] == factor(8)
-    assert [3] == factor(9)
-    assert [2,5] == factor(10)
-    assert [3,5] == factor(15)
-    assert [3,5,9,15] == factor(45)
-    assert [3,11] == factor(33)
 
 
 def test_character():

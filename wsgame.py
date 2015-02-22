@@ -16,6 +16,10 @@ class Character(object):
 
         Character.deck[self.name] = self
 
+    
+    def get_name(self):
+        return self.name
+
 
     def is_spy(self):
         return self.spy
@@ -103,10 +107,12 @@ class Game(object):
 
     def get_player_view(self, player):
         view = {}
+        my_char = player.get_character()
         for p in self.get_players():
-            its_char = p.get_character()
             other_char = p.get_character()
-            view[p.get_name()] = its_char.knows_other_as(other_char)
+            view[p.get_name()] = my_char.knows_other_as(other_char)
+
+        #view[player.get_name()] = my_char.get_name()
 
         return view
 
@@ -114,6 +120,8 @@ class Game(object):
     def assign_roles(self, *enabled_characters):
         if self.num_players() < Rules.MIN_PLAYERS:
             raise RuntimeError(bundle.fill('not.enough.players', Rules.MIN_PLAYERS))
+
+        print("Enabled: {}".format([c.name for c in enabled_characters]))
 
         spies = [c for c in enabled_characters if c.is_spy()]
 
@@ -129,42 +137,16 @@ class Game(object):
         for i in range(len(resist), num_resist):
             resist.append(Rules.RESISTANCE)
 
-        r = random.randrange(0, self.num_players())
-        delta = rand_coprime(self.num_players())
-
-        print("Using r={0} and delta={1}".format(r, delta))
-
-        for i,c in enumerate(spies + resist):
-            who = (r + i * delta) % self.num_players()
-            self.players[who].set_character(c)
+        pool = spies[0:num_spies] + resist[0:num_resist]
+        print("Pool: {}".format([c.name for c in pool]))
 
         for p in self.players:
+            i = random.randrange(0, len(pool))
+            c = pool[i]
+            del pool[i]
+            p.set_character(c)
             print("{0} assigned {1}".format(p.name, p.get_character().name))
 
-def factor(val):
-    rval = []
-
-    if 2 == val: return rval
-    if 0 == val % 2:
-        rval.append(2)
-
-    for i in range(3, val, 2):
-        if 0 == val % i:
-            rval.append(i)
-
-    return rval
-
-
-def rand_coprime(val):
-    factors = factor(val)
-
-    guess = random.randrange(1,val) % val
-    for i in range(val):
-        if 0 != guess and guess not in factors:
-            return guess
-        guess += 1
-
-    return 1
 
 
 class Player(object):
@@ -198,6 +180,7 @@ class WSGame(object):
     EVT_ADD_PLAYER = 'add player'
     EVT_REM_PLAYER = 'remove player'
     EVT_ASSIGN_ROLES = 'assign roles'
+    EVT_ROLES_ASSIGNED = 'roles assigned'
     EVT_ERROR = 'error'
 
     FACTOR = (2 / 3)
@@ -211,16 +194,17 @@ class WSGame(object):
         self.unk = 0
 
 
-    def update_player_views(self, evt, who):
+    def update_player_views(self, evt, extra={}):
         if 0 == len(self.connected_players):
             return
 
         for ws,p in self.connected_players.items():
             data = {
+                    "my_role": p.get_character().get_name(),
                     "players": self.game.get_player_view(p)
                     }
-            if who:
-                data["player"] = who.get_name()
+
+            data.update(extra)
 
             ws.send(json.dumps([evt, data]))
 
@@ -231,7 +215,7 @@ class WSGame(object):
         self.connected_players[ws] = p
         self.game.add_player(p)
 
-        self.update_player_views(WSGame.EVT_ADD_PLAYER, p)
+        self.update_player_views(WSGame.EVT_ADD_PLAYER, {"player": p.get_name()})
 
 
 
@@ -239,7 +223,7 @@ class WSGame(object):
         departing = self.connected_players.pop(ws)
         self.game.rem_player(departing)
 
-        self.update_player_views(WSGame.EVT_REM_PLAYER, departing)
+        self.update_player_views(WSGame.EVT_REM_PLAYER, {"player": departing.get_name()})
 
     
     def process_event(self, ws, event, data):
@@ -247,10 +231,16 @@ class WSGame(object):
             if WSGame.EVT_CHANGE_NAME  == event:
                 p = self.connected_players[ws]
                 p.set_name(data['player'])
-                self.update_player_views(WSGame.EVT_ADD_PLAYER, p)
+                self.update_player_views(WSGame.EVT_ADD_PLAYER, {"player": p.get_name()})
             elif WSGame.EVT_ASSIGN_ROLES == event:
-                self.game.assign_roles()
-                self.update_player_views(WSGame.EVT_ASSIGN_ROLES, None)
+                specials = []
+                if 'special_characters' in data:
+                    for name in data['special_characters']:
+                        if name in Character.deck:
+                            specials.append(Character.deck[name])
+
+                self.game.assign_roles(*specials)
+                self.update_player_views(WSGame.EVT_ROLES_ASSIGNED)
             else:
                 raise RuntimeError("Unrecognized event")
 

@@ -6,6 +6,11 @@
 	<body>
 		<input id="name" type="text" value="fixme"></input>
 		<button id="join" type="button">Join</button>
+		<button id="assign" type="button">Assign</button>
+
+		<p>
+			You are: <span id="role">?</span>.
+		</p>
 
 		<ul id="player_list">
 		</ul>
@@ -17,8 +22,13 @@
 $(document).ready(function() {
 	$("#join").click(function(evt) {
 		var name = $("#name").val();
-		msg = ["change name", {"game": "causton", "player": name}];
+		var msg = ["change name", {"game": "causton", "player": name}];
 		sock.send(JSON.stringify(msg))
+	});
+
+	$("#assign").click(function() {
+		var msg = ["assign roles", {"special_characters": ["merlin", "assassin"]}];
+		sock.send(JSON.stringify(msg));
 	});
 
 	//alert(window.location.hostname);
@@ -35,6 +45,7 @@ $(document).ready(function() {
 		for(name in data.players) {
 			pl.append($('<li>').text(name + ' is ' + data.players[name]));
 		}
+		$("#role").text(data.my_role);
 	};
 	sock.onclose = function() {
 		console.log('close');

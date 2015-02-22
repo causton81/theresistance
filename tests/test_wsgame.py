@@ -40,13 +40,13 @@ class TestWSGame(testing.AsyncHTTPTestCase):
         ws1 = yield from h.connect()
         event, data = yield from h.recv(ws1)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "unknown1", "players": {"unknown1": "resistance"} }
+        assert data == {"player": "unknown1", "my_role": "resistance", "players": {"unknown1": "resistance"} }
 
         h.send(ws1, WSGame.EVT_CHANGE_NAME, {"player": "causton"})
 
         event, data = yield from h.recv(ws1)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "causton", "players": {"causton": "resistance"} }
+        assert data == {"player": "causton", "my_role": "resistance", "players": {"causton": "resistance"} }
 
 
         ws2 = yield from h.connect()
@@ -54,17 +54,17 @@ class TestWSGame(testing.AsyncHTTPTestCase):
 
         event, data = yield from h.recv(ws2)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "unknown2", "players": {"causton": "resistance", "unknown2": "resistance"} }
+        assert data == {"player": "unknown2", "my_role": "resistance", "players": {"causton": "resistance", "unknown2": "resistance"} }
         event, data = yield from h.recv(ws2)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "kaladin", "players": {"causton": "resistance", "kaladin": "resistance"} }
+        assert data == {"player": "kaladin", "my_role": "resistance", "players": {"causton": "resistance", "kaladin": "resistance"} }
 
         event, data = yield from h.recv(ws1)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "unknown2", "players": {"causton": "resistance", "unknown2": "resistance"} }
+        assert data == {"player": "unknown2", "my_role": "resistance", "players": {"causton": "resistance", "unknown2": "resistance"} }
         event, data = yield from h.recv(ws1)
         assert WSGame.EVT_ADD_PLAYER == event
-        assert data == {"player": "kaladin", "players": {"causton": "resistance", "kaladin": "resistance"} }
+        assert data == {"player": "kaladin", "my_role": "resistance", "players": {"causton": "resistance", "kaladin": "resistance"} }
 
 
         h.send(ws1, WSGame.EVT_ASSIGN_ROLES, {})
@@ -88,7 +88,7 @@ class TestWSGame(testing.AsyncHTTPTestCase):
             for res in results:
                 event, data = json.loads(res)
                 assert WSGame.EVT_ADD_PLAYER == event
-                assert data == {"player": unk, "players": players }
+                assert data == {"player": unk, "my_role": "resistance", "players": players }
 
             players.pop(unk)
             players[name] = 'resistance'
@@ -97,7 +97,7 @@ class TestWSGame(testing.AsyncHTTPTestCase):
             for res in results:
                 event, data = json.loads(res)
                 assert WSGame.EVT_ADD_PLAYER == event
-                assert data == {"player": name, "players": players }
+                assert data == {"player": name, "my_role": "resistance", "players": players }
 
 
 
@@ -108,7 +108,7 @@ class TestWSGame(testing.AsyncHTTPTestCase):
 
         for res in results:
             event,data = json.loads(res)
-            assert WSGame.EVT_ASSIGN_ROLES == event
+            assert WSGame.EVT_ROLES_ASSIGNED == event
 
 
 
