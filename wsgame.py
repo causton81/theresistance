@@ -60,8 +60,9 @@ class Rules(object):
     MORGANA.sees("spy", SPY, ASSASSIN, MORDRED)
 
 
+    @staticmethod
     def num_spies_for_players(num_players):
-        return math.ceil(Rules.FACTOR * num_players)
+        return int(math.ceil(Rules.FACTOR * num_players))
 
 
 NOT_ENOUGH_PLAYERS = 'not.enough.players'
